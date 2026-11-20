@@ -21,8 +21,11 @@ from 3.2 / 2.6 to 1.5 / 1.2 logit after holdout validation on synthetic
 cases: with a ~4.5-day horizon the blend's extrapolation error, not the
 trend itself, was the dominant loss term, and a tighter travel cap was worth
 roughly a third of the total pinball loss across every dynamics family
-tested, while the other v1 constants (slope damping, recency half-life,
-spread base) all re-validated as already well calibrated. The spread starts
+tested. The same validation shortened the recency half-life from 14h to 8h
+(the shortest value that stayed safe even under a simulated 24h page-refresh
+cadence), while the remaining v1 constants — slope damping 0.85, the spread
+base, the blend and shrinkage weights — all re-validated as already well
+calibrated and were left untouched. The spread starts
 from the house's random-walk width, then widens for trophies whose fit is
 poor, whose recent reads jump around, or whose earner count is so small
 that counting noise alone moves the rate; with almost no history it widens
@@ -75,7 +78,14 @@ MAX_MEDIAN_MOVE_DOWN = 1.2
 SLOPE_DAMP = 0.85
 # Clock-time half-life of the recency weights, in hours. Fits must listen to
 # the current climb, not to the flat plateau before the trophy unlocked.
-RECENCY_HALF_LIFE_H = 14.0
+# v2 shortened this from 14h to 8h on the same holdout evidence as the
+# clamp: with page states arriving every few hours, a 14h half-life lets
+# two-day-old states outvote the current trajectory. Shorter half-lives
+# (4–6h) scored even better when refreshes come every 3–14h but degraded
+# sharply under a simulated 24h refresh cadence, where they leave the fit
+# effectively listening to a single state — 8h is the shortest value that
+# stayed safe at every refresh cadence tested.
+RECENCY_HALF_LIFE_H = 8.0
 # Random-walk spread of a rate's move, in logit units per square-root day.
 BASE_SIGMA_PER_SQRT_DAY = 0.55
 SIGMA_LO = 0.45
