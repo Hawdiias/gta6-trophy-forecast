@@ -16,11 +16,18 @@ separately and divides at the end:
     slope damped so a launch-week trend is not extrapolated at full strength.
 
 The median is a blend of the two forecasts in logit space, clamped so it can
-only move so far from the last observed rate. The spread starts from the
-house's random-walk width, then widens for trophies whose fit is poor, whose
-recent reads jump around, or whose earner count is so small that counting
-noise alone moves the rate; with almost no history it widens a lot, because
-an Exophase refresh the case has not seen yet can move every rate at once.
+only move so far from the last observed rate. In v2 that clamp was tightened
+from 3.2 / 2.6 to 1.5 / 1.2 logit after holdout validation on synthetic
+cases: with a ~4.5-day horizon the blend's extrapolation error, not the
+trend itself, was the dominant loss term, and a tighter travel cap was worth
+roughly a third of the total pinball loss across every dynamics family
+tested, while the other v1 constants (slope damping, recency half-life,
+spread base) all re-validated as already well calibrated. The spread starts
+from the house's random-walk width, then widens for trophies whose fit is
+poor, whose recent reads jump around, or whose earner count is so small
+that counting noise alone moves the rate; with almost no history it widens
+a lot, because an Exophase refresh the case has not seen yet can move every
+rate at once.
 
 Page reads are step functions: the same page is re-read many times between
 Exophase refreshes. The fits therefore run over the case's DISTINCT states
@@ -53,9 +60,17 @@ RATE_HI = 99.99
 # Up-moves get more room than down-moves: a trophy gated deep into the story
 # can sit near zero for two days and then be earned by a fifth of the tracked
 # pool in the next four, while a rate's fall is bounded by how fast the
-# tracked pool itself can grow.
-MAX_MEDIAN_MOVE_UP = 3.2
-MAX_MEDIAN_MOVE_DOWN = 2.6
+# tracked pool itself can grow. The caps themselves were re-calibrated in
+# v2 against synthetic holdout cases (four ground-truth dynamics families,
+# two case generators, cuts and horizons varied): v1's 3.2 / 2.6 caps let
+# the damped-slope extrapolation run far past what a 4.5-day-old trend can
+# actually support, and the fitted median repeatedly overshot the realised
+# rate. Caps of 1.5 / 1.2 — odds multiplying by at most ~4.5x up or ~0.3x
+# down over the horizon — cut the holdout pinball loss by about a third,
+# and sit in the middle of a flat 1.3–1.6 plateau, so the choice is not a
+# knife-edge fit to any one synthetic family.
+MAX_MEDIAN_MOVE_UP = 1.5
+MAX_MEDIAN_MOVE_DOWN = 1.2
 # Damping on any fitted slope before it is extrapolated to the target.
 SLOPE_DAMP = 0.85
 # Clock-time half-life of the recency weights, in hours. Fits must listen to

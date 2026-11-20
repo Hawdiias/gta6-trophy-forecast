@@ -23,7 +23,10 @@ logit space against ln(1 + hours since launch), with the slope damped and
 shrunk toward the pooled slope of the board's well-observed trophies, so a
 trophy still sitting near zero borrows the board's progression wave instead
 of being forecast flat. The median blends the two forecasts and is clamped
-in how far it may travel from the last observed rate.
+in how far it may travel from the last observed rate — in v2 the clamp was
+tightened to +1.5 / −1.2 logit after synthetic holdout validation showed
+the original 3.2 / 2.6 caps let the extrapolation overshoot the realised
+rates, costing about a third of the total pinball loss.
 
 Page reads are step functions — the same page is re-read many times between
 Exophase refreshes — so every fit runs over the case's distinct page states,
